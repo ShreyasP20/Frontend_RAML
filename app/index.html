@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Malicious APKs</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  </head>
+  <body>
+    <main class="container">
+      <h1>Malicious APKs</h1>
+
+      <section class="card">
+        <h2>Upload APK & Describe Behavior</h2>
+        <form id="report-form">
+          <label
+            >APK file:
+            <input id="apk-input" type="file" accept=".apk" />
+          </label>
+
+          <label
+            >Malicious behavior description:
+            <textarea
+              id="description"
+              rows="6"
+              placeholder="Describe observed or suspected malicious behaviour..."
+            ></textarea>
+          </label>
+
+          <div class="row">
+            <button id="generate-btn" type="button">Generate PDF Report</button>
+            <button id="clear-btn" type="button" class="muted">Clear</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Dashboard — Generated Reports</h2>
+        <div id="reports-list" class="reports-list">No reports yet.</div>
+      </section>
+
+      <footer>
+        <small
+          >Client-side demo — PDFs are stored in browser localStorage (demo
+          only).</small
+        >
+      </footer>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
