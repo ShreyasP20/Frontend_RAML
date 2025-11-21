@@ -65,7 +65,7 @@ if (loginForm) {
     const password = document.getElementById("loginPassword").value.trim();
 
     if (!username || !password) {
-      alert("Please enter both username and password!");
+      alert("Please enter both username/email and password!");
       return;
     }
 
@@ -78,6 +78,7 @@ if (loginForm) {
 
       const data = await res.json();
       if (res.ok) {
+        localStorage.setItem("currentUser", JSON.stringify(data.user));
         alert("✅ Login successful!");
         window.location.href = "../app/index.html";
       } else {

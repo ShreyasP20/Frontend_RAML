@@ -74,7 +74,6 @@ textarea {
   min-height: 120px;
 }
 
-/* Styles to change the placeholder color to black */
 textarea::placeholder {
   color: #ffffff;
   opacity: 1; /* Ensures the color is fully applied */
@@ -133,13 +132,11 @@ button.muted:hover {
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  /* Replaced dashed border with a slightly more transparent solid one */
   background: rgba(255, 255, 255, 0.06); 
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 16px;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  /* Added a very subtle shadow */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); 
 }
 .meta {
@@ -154,4 +151,89 @@ footer {
   margin-top: 30px;
   color: var(--muted);
   font-size: 0.85rem;
+}
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.user-avatar {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(0,229,255,0.12), rgba(255,255,255,0.06));
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.2);
+  cursor: default;
+  user-select: none;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+}
+.avatar-initial {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.user-tooltip {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 180px;
+  background: rgba(15,17,22,0.95);
+  color: var(--text);
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.5);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition: opacity 160ms ease, transform 160ms ease, visibility 160ms;
+  z-index: 50;
+  font-size: 0.9rem;
+}
+.user-avatar:hover .user-tooltip,
+.user-avatar:focus-within .user-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+@media (max-width: 560px) {
+  .site-header h1 { font-size: 1.6rem; }
+  .user-avatar { width: 40px; height: 40px; }
+}
+
+.drop-zone {
+  margin-top: 8px;
+  padding: 18px;
+  border-radius: 14px;
+  border: 1px dashed rgba(255,255,255,0.18);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  transition: box-shadow 160ms ease, transform 100ms ease, border-color 120ms ease;
+}
+.drop-zone.dragover {
+  border-color: rgba(0,229,255,0.6);
+  box-shadow: 0 8px 30px rgba(0,229,255,0.08), inset 0 1px 0 rgba(255,255,255,0.03);
+  transform: translateY(-2px);
+}
+.drop-zone input[type="file"] { display: none; }
+.drop-content { flex: 1; min-width: 0; }
+.drop-title { margin: 0; font-weight: 700; color: var(--text); }
+.drop-sub { margin: 4px 0 0; color: var(--muted); font-size: 0.9rem; }
+.browse { color: var(--accent); text-decoration: underline; cursor: pointer; }
+.file-info { margin-left: 12px; color: var(--text); font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+@media (max-width: 560px) {
+  .drop-zone { padding: 14px; }
+  .file-info { display: none; }
 }

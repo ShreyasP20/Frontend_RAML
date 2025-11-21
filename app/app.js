@@ -3,36 +3,106 @@ const descriptionInput = document.getElementById("description");
 const generateBtn = document.getElementById("generate-btn");
 const clearBtn = document.getElementById("clear-btn");
 const reportsList = document.getElementById("reports-list");
+const dropZone = document.getElementById('drop-zone');
+const fileInfo = document.getElementById('file-info');
+const browseBtn = document.getElementById('browse-btn');
+
+function updateFileInfo(file) {
+    if (!fileInfo) return;
+    fileInfo.hidden = false;
+    const sizeMB = (file.size / 1024 / 1024).toFixed(2);
+    fileInfo.textContent = `${file.name} • ${sizeMB} MB`;
+}
+
+if (dropZone && apkInput) {
+    dropZone.addEventListener('click', (e) => {
+        apkInput.click();
+    });
+
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', (e) => {
+        dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        const files = e.dataTransfer && e.dataTransfer.files;
+        if (files && files.length) {
+            try {
+                const dt = new DataTransfer();
+                dt.items.add(files[0]);
+                apkInput.files = dt.files;
+            } catch (err) {
+                console.warn('Could not set input.files programmatically', err);
+            }
+            updateFileInfo(files[0]);
+        }
+    });
+
+    apkInput.addEventListener('change', (e) => {
+        if (apkInput.files && apkInput.files[0]) updateFileInfo(apkInput.files[0]);
+    });
+}
+
+const userAvatar = document.getElementById('user-avatar');
+const avatarInitial = document.getElementById('avatar-initial');
+const tooltipUsername = document.getElementById('tooltip-username');
+const tooltipEmail = document.getElementById('tooltip-email');
+const savedUser = localStorage.getItem("currentUser");
+const currentUser = savedUser ? JSON.parse(savedUser) : null;
+
+if (currentUser) {
+    const userAvatar = document.getElementById('user-avatar');
+    const avatarInitial = document.getElementById('avatar-initial');
+    const tooltipUsername = document.getElementById('tooltip-username');
+    const tooltipEmail = document.getElementById('tooltip-email');
+
+    if (userAvatar && avatarInitial && tooltipUsername && tooltipEmail) {
+        userAvatar.dataset.username = currentUser.username;
+        userAvatar.dataset.email = currentUser.email;
+        avatarInitial.textContent = currentUser.username.charAt(0).toUpperCase();
+        tooltipUsername.textContent = currentUser.username;
+        tooltipEmail.textContent = currentUser.email;
+    }
+} else {
+    window.location.href = "../auth/login.html";
+}
+if (userAvatar && avatarInitial && tooltipUsername && tooltipEmail) {
+    userAvatar.dataset.username = currentUser.username;
+    userAvatar.dataset.email = currentUser.email;
+    avatarInitial.textContent = currentUser.username.charAt(0).toUpperCase();
+    tooltipUsername.textContent = currentUser.username;
+    tooltipEmail.textContent = currentUser.email;
+}
 
 const API_URL = "http://localhost:8000/api/analysis/upload";
 
-function predictBehaviorIDs(text) {
-    text = text.toLowerCase();
-    const ids = [];
 
-    if (text.includes("sms") || text.includes("call") || text.includes("communication"))
-        ids.push(2);
+window.addEventListener("DOMContentLoaded", () => {
+    const savedUser = localStorage.getItem("currentUser");
+    if (savedUser) {
+        const currentUser = JSON.parse(savedUser);
 
-    if (text.includes("privacy") || text.includes("steal") || text.includes("contact"))
-        ids.push(1);
+        const userAvatar = document.getElementById('user-avatar');
+        const avatarInitial = document.getElementById('avatar-initial');
+        const tooltipUsername = document.getElementById('tooltip-username');
+        const tooltipEmail = document.getElementById('tooltip-email');
 
-    if (text.includes("bank") || text.includes("credential") || text.includes("overlay"))
-        ids.push(4);
+        if (userAvatar && avatarInitial && tooltipUsername && tooltipEmail) {
+            userAvatar.dataset.username = currentUser.username;
+            userAvatar.dataset.email = currentUser.email;
+            avatarInitial.textContent = currentUser.username.charAt(0).toUpperCase();
+            tooltipUsername.textContent = currentUser.username;
+            tooltipEmail.textContent = currentUser.email;
+        }
+    }
+});
 
-    if (text.includes("encrypt") || text.includes("ransom"))
-        ids.push(5);
-
-    if (text.includes("accessibility"))
-        ids.push(6);
-
-    if (text.includes("root") || text.includes("exploit"))
-        ids.push(7);
-
-    if (text.includes("ad") || text.includes("fraud"))
-        ids.push(9);
-
-    return ids.length ? ids : [1];
-}
 
 async function uploadToBackend() {
     const file = apkInput.files[0];
@@ -42,16 +112,9 @@ async function uploadToBackend() {
         alert("Please upload an APK file.");
         return;
     }
-    if (!description) {
-        alert("Enter a description of the APK behavior.");
-        return;
-    }
-
-    const behaviorIDs = predictBehaviorIDs(description).join(" ");
 
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("behaviors", behaviorIDs);
 
     generateBtn.disabled = true;
     generateBtn.textContent = "Analyzing (RAML)...";
@@ -74,7 +137,6 @@ async function uploadToBackend() {
 
     return {
         apkName: file.name,
-        description,
         backendResult: result
     };
 }

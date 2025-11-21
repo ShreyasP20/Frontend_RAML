@@ -9,24 +9,28 @@
   </head>
   <body>
     <main class="container">
-      <h1>Malicious APKs</h1>
+      <header class="site-header">
+        <h1>Malicious APKs</h1>
+        <div class="user-avatar" id="user-avatar" data-username="" data-email="" aria-label="User">
+          <span class="avatar-initial" id="avatar-initial">?</span>
+          <div class="user-tooltip" id="user-tooltip">
+            <div><strong>Username:</strong> <span id="tooltip-username"></span></div>
+            <div><strong>Email:</strong> <span id="tooltip-email"></span></div>
+          </div>
+        </div>
+      </header>
 
       <section class="card">
-        <h2>Upload APK & Describe Behavior</h2>
+        <h2>Upload APK</h2>
         <form id="report-form">
-          <label
-            >APK file:
+          <div class="drop-zone" id="drop-zone">
             <input id="apk-input" type="file" accept=".apk" />
-          </label>
-
-          <label
-            >Malicious behavior description:
-            <textarea
-              id="description"
-              rows="6"
-              placeholder="Describe observed or suspected malicious behaviour..."
-            ></textarea>
-          </label>
+            <div class="drop-content" id="drop-content">
+              <p class="drop-title">Drag & drop APK here or <span class="browse" id="browse-btn">browse</span></p>
+              <p class="drop-sub">Supported: <strong>.apk</strong></p>
+            </div>
+            <div class="file-info" id="file-info" hidden></div>
+          </div>
 
           <div class="row">
             <button id="generate-btn" type="button">Generate PDF Report</button>
