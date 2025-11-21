@@ -20,7 +20,7 @@ iconclose.addEventListener('click', () => {
   wrapper.classList.remove('active-popup');
 });
 
-const API_URL = "http://127.0.0.1:8000/api"; 
+const API_URL = "http://127.0.0.1:8000/user"; 
 
 const registerForm = document.getElementById("registerForm");
 if (registerForm) {
@@ -29,8 +29,9 @@ if (registerForm) {
     e.preventDefault();
     const username = document.getElementById("registerUsername").value.trim();
     const password = document.getElementById("registerPassword").value.trim();
+    const email = document.getElementById("registerEmail").value.trim();
 
-    if (!username || !password) {
+    if (!username || !password || !email) {
       alert("Please fill all fields!");
       return;
     }
@@ -39,7 +40,7 @@ if (registerForm) {
       const res = await fetch(`${API_URL}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username, email, password}),
       });
 
       const data = await res.json();
