@@ -1,5 +1,4 @@
 const apkInput = document.getElementById("apk-input");
-const descriptionInput = document.getElementById("description");
 const generateBtn = document.getElementById("generate-btn");
 const clearBtn = document.getElementById("clear-btn");
 const reportsList = document.getElementById("reports-list");
@@ -106,8 +105,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
 async function uploadToBackend() {
     const file = apkInput.files[0];
-    const description = descriptionInput.value.trim();
-
     if (!file) {
         alert("Please upload an APK file.");
         return;
