@@ -9,8 +9,110 @@ const browseBtn = document.getElementById('browse-btn');
 
 const API_URL = "http://localhost:8000/api/analysis/upload";
 const REPORTS_API_URL = "http://localhost:8000/api/analysis/reports";
+const USER_API_URL = "http://localhost:8000/api/user";
 
 let currentUser = null;
+
+
+function getAccessToken() {
+  return localStorage.getItem("accessToken");
+}
+
+
+function getRefreshToken() {
+  return localStorage.getItem("refreshToken");
+}
+
+
+function clearTokens() {
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
+  localStorage.removeItem("currentUser");
+}
+
+
+function isTokenExpired(token) {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const expTime = payload.exp * 1000;
+    return Date.now() >= expTime;
+  } catch (err) {
+    return true;
+  }
+}
+
+async function verifyToken() {
+  const accessToken = getAccessToken();
+  if (!accessToken) {
+    return false;
+  }
+
+  if (isTokenExpired(accessToken)) {
+    const refreshed = await refreshAccessToken();
+    if (!refreshed) {
+      clearTokens();
+      return false;
+    }
+  }
+
+  return true;
+}
+
+
+async function refreshAccessToken() {
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) {
+    return false;
+  }
+
+  try {
+    const res = await fetch(`${USER_API_URL}/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      localStorage.setItem("accessToken", data.access_token);
+      return true;
+    } else {
+      clearTokens();
+      return false;
+    }
+  } catch (err) {
+    console.error("Error refreshing token:", err);
+    return false;
+  }
+}
+
+
+async function authenticatedFetch(url, options = {}) {
+  let accessToken = getAccessToken();
+
+  if (accessToken && isTokenExpired(accessToken)) {
+    const refreshed = await refreshAccessToken();
+    if (!refreshed) {
+      window.location.href = "../Login/login.html";
+      return null;
+    }
+    accessToken = getAccessToken();
+  }
+
+  const headers = {
+    ...options.headers,
+    "Authorization": `Bearer ${accessToken}`,
+  };
+
+  return fetch(url, { ...options, headers });
+}
+
+
+function logout() {
+  clearTokens();
+  window.location.href = "../Login/login.html";
+}
+
 
 function updateFileInfo(file) {
     if (!fileInfo) return;
@@ -54,11 +156,17 @@ if (dropZone && apkInput) {
     });
 }
 
-// Initialize user and UI
+
 window.addEventListener("DOMContentLoaded", async () => {
+    const tokenValid = await verifyToken();
+    if (!tokenValid) {
+        window.location.href = "../Login/login.html";
+        return;
+    }
+
     const savedUser = localStorage.getItem("currentUser");
     if (!savedUser) {
-        window.location.href = "../auth/login.html";
+        window.location.href = "../Login/login.html";
         return;
     }
     
@@ -84,12 +192,13 @@ window.addEventListener("DOMContentLoaded", async () => {
     setInterval(fetchAndDisplayReports, 3000);
 });
 
+
 async function fetchAndDisplayReports() {
     if (!currentUser) return;
     
     try {
-        const resp = await fetch(`${REPORTS_API_URL}/${currentUser.email}`);
-        if (!resp.ok) {
+        const resp = await authenticatedFetch(`${REPORTS_API_URL}/${currentUser.email}`);
+        if (!resp || !resp.ok) {
             console.error("Failed to fetch reports");
             return;
         }
@@ -151,12 +260,12 @@ async function uploadToBackend() {
     generateBtn.textContent = "Analyzing (RAML)...";
 
     try {
-        const resp = await fetch(API_URL, {
+        const resp = await authenticatedFetch(API_URL, {
             method: "POST",
             body: formData
         });
 
-        if (!resp.ok) {
+        if (!resp || !resp.ok) {
             generateBtn.disabled = false;
             generateBtn.textContent = "Generate PDF Report";
             throw new Error("Backend error: " + (await resp.text()));
