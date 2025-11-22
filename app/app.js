@@ -7,6 +7,11 @@ const dropZone = document.getElementById('drop-zone');
 const fileInfo = document.getElementById('file-info');
 const browseBtn = document.getElementById('browse-btn');
 
+const API_URL = "http://localhost:8000/api/analysis/upload";
+const REPORTS_API_URL = "http://localhost:8000/api/analysis/reports";
+
+let currentUser = null;
+
 function updateFileInfo(file) {
     if (!fileInfo) return;
     fileInfo.hidden = false;
@@ -49,14 +54,16 @@ if (dropZone && apkInput) {
     });
 }
 
-const userAvatar = document.getElementById('user-avatar');
-const avatarInitial = document.getElementById('avatar-initial');
-const tooltipUsername = document.getElementById('tooltip-username');
-const tooltipEmail = document.getElementById('tooltip-email');
-const savedUser = localStorage.getItem("currentUser");
-const currentUser = savedUser ? JSON.parse(savedUser) : null;
+// Initialize user and UI
+window.addEventListener("DOMContentLoaded", async () => {
+    const savedUser = localStorage.getItem("currentUser");
+    if (!savedUser) {
+        window.location.href = "../auth/login.html";
+        return;
+    }
+    
+    currentUser = JSON.parse(savedUser);
 
-if (currentUser) {
     const userAvatar = document.getElementById('user-avatar');
     const avatarInitial = document.getElementById('avatar-initial');
     const tooltipUsername = document.getElementById('tooltip-username');
@@ -69,111 +76,116 @@ if (currentUser) {
         tooltipUsername.textContent = currentUser.username;
         tooltipEmail.textContent = currentUser.email;
     }
-} else {
-    window.location.href = "../auth/login.html";
-}
-if (userAvatar && avatarInitial && tooltipUsername && tooltipEmail) {
-    userAvatar.dataset.username = currentUser.username;
-    userAvatar.dataset.email = currentUser.email;
-    avatarInitial.textContent = currentUser.username.charAt(0).toUpperCase();
-    tooltipUsername.textContent = currentUser.username;
-    tooltipEmail.textContent = currentUser.email;
-}
-
-const API_URL = "http://localhost:8000/api/analysis/upload";
-
-
-window.addEventListener("DOMContentLoaded", () => {
-    const savedUser = localStorage.getItem("currentUser");
-    if (savedUser) {
-        const currentUser = JSON.parse(savedUser);
-
-        const userAvatar = document.getElementById('user-avatar');
-        const avatarInitial = document.getElementById('avatar-initial');
-        const tooltipUsername = document.getElementById('tooltip-username');
-        const tooltipEmail = document.getElementById('tooltip-email');
-
-        if (userAvatar && avatarInitial && tooltipUsername && tooltipEmail) {
-            userAvatar.dataset.username = currentUser.username;
-            userAvatar.dataset.email = currentUser.email;
-            avatarInitial.textContent = currentUser.username.charAt(0).toUpperCase();
-            tooltipUsername.textContent = currentUser.username;
-            tooltipEmail.textContent = currentUser.email;
-        }
-    }
+    
+    // Fetch and display reports
+    await fetchAndDisplayReports();
+    
+    // Poll for updated status every 3 seconds
+    setInterval(fetchAndDisplayReports, 3000);
 });
 
+async function fetchAndDisplayReports() {
+    if (!currentUser) return;
+    
+    try {
+        const resp = await fetch(`${REPORTS_API_URL}/${currentUser.email}`);
+        if (!resp.ok) {
+            console.error("Failed to fetch reports");
+            return;
+        }
+        
+        const reports = await resp.json();
+        renderReportsFromBackend(reports);
+    } catch (err) {
+        console.error("Error fetching reports:", err);
+    }
+}
+
+function renderReportsFromBackend(reports) {
+    if (!reports || reports.length === 0) {
+        reportsList.innerHTML = "No reports yet.";
+        return;
+    }
+
+    reportsList.innerHTML = reports.map(report => {
+        const date = new Date(report.created_at).toLocaleString();
+        const statusClass = `status-${report.status.toLowerCase().replace(" ", "-")}`;
+        
+        return `
+            <div class="report-item" data-id="${report.id}">
+                <div class="report-header">
+                    <h3>${report.apk_filename}</h3>
+                    <span class="status ${statusClass}">${report.status}</span>
+                </div>
+                <div class="report-meta">
+                    <p><strong>Uploaded:</strong> ${date}</p>
+                    <p><strong>Task ID:</strong> <code>${report.task_id}</code></p>
+                </div>
+                <div class="report-actions">
+                    ${report.status === "Completed" ? `<button class="download" data-id="${report.id}">Download PDF</button>` : ''}
+                    <button class="delete" data-id="${report.id}">Delete</button>
+                </div>
+            </div>
+        `;
+    }).join("");
+}
 
 async function uploadToBackend() {
     const file = apkInput.files[0];
-    const description = descriptionInput.value.trim();
 
     if (!file) {
         alert("Please upload an APK file.");
         return;
     }
 
+    if (!currentUser) {
+        alert("User not logged in");
+        return;
+    }
+
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("user_email", currentUser.email);
 
     generateBtn.disabled = true;
     generateBtn.textContent = "Analyzing (RAML)...";
 
-    const resp = await fetch(API_URL, {
-        method: "POST",
-        body: formData
-    });
+    try {
+        const resp = await fetch(API_URL, {
+            method: "POST",
+            body: formData
+        });
 
-    if (!resp.ok) {
+        if (!resp.ok) {
+            generateBtn.disabled = false;
+            generateBtn.textContent = "Generate PDF Report";
+            throw new Error("Backend error: " + (await resp.text()));
+        }
+
+        const result = await resp.json();
+
         generateBtn.disabled = false;
         generateBtn.textContent = "Generate PDF Report";
-        throw new Error("Backend error: " + (await resp.text()));
+        
+        apkInput.value = "";
+        
+        // Refresh reports immediately
+        await fetchAndDisplayReports();
+
+        return result;
+    } catch (err) {
+        generateBtn.disabled = false;
+        generateBtn.textContent = "Generate PDF Report";
+        throw err;
     }
-
-    const result = await resp.json();
-
-    generateBtn.disabled = false;
-    generateBtn.textContent = "Generate PDF Report";
-
-    return {
-        apkName: file.name,
-        backendResult: result
-    };
 }
 
 generateBtn.addEventListener("click", async () => {
     try {
         const data = await uploadToBackend();
-        if (!data) return;
-
-        const pdfBlob = await generatePdf({
-            apkName: data.apkName,
-            description: data.description,
-            backendResult: data.backendResult
-        });
-
-        const dataUrl = await blobToDataURL(pdfBlob);
-
-        const reports = loadReports();
-
-        const id = Date.now().toString(36);
-        const title = `Report: ${data.apkName} (${new Date().toLocaleString()})`;
-
-        reports.push({
-            id,
-            title,
-            date: new Date().toLocaleString(),
-            apkName: data.apkName,
-            backend: data.backendResult,
-            dataUrl,
-            filename: data.apkName.replace(".apk", "") + "-raml-report.pdf"
-        });
-
-        saveReports(reports);
-        renderReports();
-
-        alert("Analysis complete! PDF saved to dashboard.");
-
+        if (data) {
+            alert("APK uploaded! Analysis started. Reports will appear in the dashboard.");
+        }
     } catch (err) {
         console.error(err);
         alert("Error: " + err.message);
@@ -182,27 +194,26 @@ generateBtn.addEventListener("click", async () => {
 
 clearBtn.addEventListener("click", () => {
     apkInput.value = "";
-    descriptionInput.value = "";
+    fileInfo.hidden = true;
+    if (descriptionInput) descriptionInput.value = "";
 });
 
-reportsList.addEventListener("click", (event) => {
+reportsList.addEventListener("click", async (event) => {
     const id = event.target.dataset.id;
     if (!id) return;
 
-    const reports = loadReports();
-    const idx = reports.findIndex(r => r.id === id);
-    if (idx === -1) return;
-
     if (event.target.classList.contains("download")) {
-        downloadDataUrl(reports[idx].dataUrl, reports[idx].filename);
+        // TODO: Implement PDF download from backend (markdown conversion)
+        alert("PDF download coming soon!");
     } 
     else if (event.target.classList.contains("delete")) {
         if (!confirm("Delete this report?")) return;
-        reports.splice(idx, 1);
-        saveReports(reports);
-        renderReports();
+        try {
+            // TODO: Add DELETE endpoint to backend for report deletion
+            alert("Report deletion coming soon!");
+        } catch (err) {
+            console.error("Error deleting report:", err);
+        }
     }
 });
 
-/* Initial load */
-renderReports();

@@ -237,3 +237,117 @@ footer {
   .drop-zone { padding: 14px; }
   .file-info { display: none; }
 }
+
+/* Report Item Styling */
+.report-item {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: background 0.3s, border-color 0.3s;
+}
+
+.report-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(0, 229, 255, 0.3);
+}
+
+.report-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.report-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text);
+  word-break: break-word;
+}
+
+.status {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-started {
+  background: rgba(255, 193, 7, 0.2);
+  color: #ffc107;
+  border: 1px solid rgba(255, 193, 7, 0.4);
+}
+
+.status-pending {
+  background: rgba(255, 193, 7, 0.2);
+  color: #ffc107;
+  border: 1px solid rgba(255, 193, 7, 0.4);
+}
+
+.status-in-progress {
+  background: rgba(33, 150, 243, 0.2);
+  color: #2196f3;
+  border: 1px solid rgba(33, 150, 243, 0.4);
+}
+
+.status-completed {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+  border: 1px solid rgba(76, 175, 80, 0.4);
+}
+
+.status-failed {
+  background: rgba(244, 67, 54, 0.2);
+  color: #f44336;
+  border: 1px solid rgba(244, 67, 54, 0.4);
+}
+
+.report-meta {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.report-meta p {
+  margin: 4px 0;
+}
+
+.report-meta code {
+  background: rgba(0, 229, 255, 0.1);
+  color: var(--accent);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.85rem;
+}
+
+.report-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.report-actions button {
+  padding: 8px 14px;
+  font-size: 0.9rem;
+}
+
+.report-actions .delete {
+  background: rgba(244, 67, 54, 0.15);
+  color: #f44336;
+  border: 1px solid rgba(244, 67, 54, 0.3);
+}
+
+.report-actions .delete:hover {
+  background: rgba(244, 67, 54, 0.25);
+  border-color: rgba(244, 67, 54, 0.6);
+  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+}
