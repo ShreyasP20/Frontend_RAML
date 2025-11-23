@@ -7,9 +7,10 @@ const dropZone = document.getElementById('drop-zone');
 const fileInfo = document.getElementById('file-info');
 const browseBtn = document.getElementById('browse-btn');
 
-const API_URL = "http://localhost:8000/api/analysis/upload";
-const REPORTS_API_URL = "http://localhost:8000/api/analysis/reports";
-const USER_API_URL = "http://localhost:8000/api/user";
+const API_URL = API.UPLOAD;
+const REPORTS_API_URL = API.REPORTS;
+const USER_API_URL = API.USER;
+
 
 let currentUser = null;
 

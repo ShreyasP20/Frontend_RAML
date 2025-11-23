@@ -20,7 +20,7 @@ iconclose.addEventListener('click', () => {
   wrapper.classList.remove('active-popup');
 });
 
-const API_URL = "http://127.0.0.1:8000/api/user"; 
+const API_URL = API.USER;
 
 
 function storeTokens(accessToken, refreshToken) {
