@@ -20,7 +20,92 @@ iconclose.addEventListener('click', () => {
   wrapper.classList.remove('active-popup');
 });
 
-const API_URL = "http://127.0.0.1:8000/user"; 
+const API_URL = "http://127.0.0.1:8000/api/user"; 
+
+
+function storeTokens(accessToken, refreshToken) {
+  localStorage.setItem("accessToken", accessToken);
+  localStorage.setItem("refreshToken", refreshToken);
+}
+
+function getAccessToken() {
+  return localStorage.getItem("accessToken");
+}
+
+
+function getRefreshToken() {
+  return localStorage.getItem("refreshToken");
+}
+
+
+function clearTokens() {
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
+  localStorage.removeItem("currentUser");
+}
+
+
+function isTokenExpired(token) {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const expTime = payload.exp * 1000;
+    return Date.now() >= expTime;
+  } catch (err) {
+    return true;
+  }
+}
+
+
+async function refreshAccessToken() {
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) {
+    return false;
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      localStorage.setItem("accessToken", data.access_token);
+      return true;
+    } else {
+      clearTokens();
+      return false;
+    }
+  } catch (err) {
+    console.error("Error refreshing token:", err);
+    return false;
+  }
+}
+
+
+async function authenticatedFetch(url, options = {}) {
+  let accessToken = getAccessToken();
+
+  if (accessToken && isTokenExpired(accessToken)) {
+    const refreshed = await refreshAccessToken();
+    if (!refreshed) {
+      window.location.href = "./login.html";
+      return null;
+    }
+    accessToken = getAccessToken();
+  }
+
+
+  const headers = {
+    ...options.headers,
+    "Authorization": `Bearer ${accessToken}`,
+  };
+
+  return fetch(url, { ...options, headers });
+}
+
+
 
 const registerForm = document.getElementById("registerForm");
 if (registerForm) {
@@ -57,6 +142,7 @@ if (registerForm) {
   });
 }
 
+
 const loginForm = document.getElementById("loginForm");
 if (loginForm) {
   loginForm.addEventListener("submit", async (e) => {
@@ -78,6 +164,7 @@ if (loginForm) {
 
       const data = await res.json();
       if (res.ok) {
+        storeTokens(data.access_token, data.refresh_token);
         localStorage.setItem("currentUser", JSON.stringify(data.user));
         alert("✅ Login successful!");
         window.location.href = "../app/index.html";
@@ -89,4 +176,10 @@ if (loginForm) {
       console.error(err);
     }
   });
+}
+
+
+function logout() {
+  clearTokens();
+  window.location.href = "./login.html";
 }
