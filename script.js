@@ -90,7 +90,7 @@ async function authenticatedFetch(url, options = {}) {
   if (accessToken && isTokenExpired(accessToken)) {
     const refreshed = await refreshAccessToken();
     if (!refreshed) {
-      window.location.href = "./login.html";
+      window.location.href = "/Frontend_RAML/Frontend_RAML/login.html";
       return null;
     }
     accessToken = getAccessToken();
@@ -167,7 +167,7 @@ if (loginForm) {
         storeTokens(data.access_token, data.refresh_token);
         localStorage.setItem("currentUser", JSON.stringify(data.user));
         alert("✅ Login successful!");
-        window.location.href = "../app/index.html";
+        window.location.href = "/Frontend_RAML/Frontend_RAML/index.html";
       } else {
         alert(`⚠️ ${data.detail || "Invalid credentials."}`);
       }
@@ -181,5 +181,5 @@ if (loginForm) {
 
 function logout() {
   clearTokens();
-  window.location.href = "./login.html";
+  window.location.href = "/Frontend_RAML/Frontend_RAML/login.html";
 }

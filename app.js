@@ -197,7 +197,7 @@ async function fetchAndDisplayReports() {
     if (!currentUser) return;
     
     try {
-        const resp = await authenticatedFetch(`${REPORTS_API_URL}/${currentUser.email}`);
+        const resp = await authenticatedFetch(`${REPORTS_API_URL}`);
         if (!resp || !resp.ok) {
             console.error("Failed to fetch reports");
             return;
@@ -241,8 +241,6 @@ function renderReportsFromBackend(reports) {
 
 async function uploadToBackend() {
     const file = apkInput.files[0];
-    const description = descriptionInput.value.trim();
-
     if (!file) {
         alert("Please upload an APK file.");
         return;
@@ -255,7 +253,6 @@ async function uploadToBackend() {
 
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("user_email", currentUser.email);
 
     generateBtn.disabled = true;
     generateBtn.textContent = "Analyzing (RAML)...";
