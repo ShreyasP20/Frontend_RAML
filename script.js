@@ -167,7 +167,7 @@ if (loginForm) {
         storeTokens(data.access_token, data.refresh_token);
         localStorage.setItem("currentUser", JSON.stringify(data.user));
         alert("✅ Login successful!");
-        window.location.href = "/Frontend_RAML/Frontend_RAML/index.html";
+        window.location.href = "/Frontend_RAML/Frontend_RAML/dashboard.html";
       } else {
         alert(`⚠️ ${data.detail || "Invalid credentials."}`);
       }
