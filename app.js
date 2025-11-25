@@ -188,8 +188,8 @@ window.addEventListener("DOMContentLoaded", async () => {
     // Fetch and display reports
     await fetchAndDisplayReports();
     
-    // Poll for updated status every 3 seconds
-    setInterval(fetchAndDisplayReports, 3000);
+    // Poll for updated status every 5 seconds
+    setInterval(fetchAndDisplayReports, 5000);
 });
 
 
