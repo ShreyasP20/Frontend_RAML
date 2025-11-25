@@ -267,14 +267,14 @@ async function uploadToBackend() {
 
     if (!resp || !resp.ok) {
       generateBtn.disabled = false;
-      generateBtn.textContent = "Generate PDF Report";
+      generateBtn.textContent = "Generate Report";
       throw new Error("Backend error: " + (await resp.text()));
     }
 
     const result = await resp.json();
 
     generateBtn.disabled = false;
-    generateBtn.textContent = "Generate PDF Report";
+    generateBtn.textContent = "Generate Report";
 
     apkInput.value = "";
 
@@ -284,7 +284,7 @@ async function uploadToBackend() {
     return result;
   } catch (err) {
     generateBtn.disabled = false;
-    generateBtn.textContent = "Generate PDF Report";
+    generateBtn.textContent = "Generate Report";
     throw err;
   }
 }
