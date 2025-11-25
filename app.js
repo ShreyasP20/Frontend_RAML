@@ -9,6 +9,7 @@ const browseBtn = document.getElementById("browse-btn");
 const API_URL = API.UPLOAD;
 const REPORTS_API_URL = API.REPORTS;
 const USER_API_URL = API.USER;
+const REPORT_DOWNLOAD = API.DOWNLOAD_REPORT
 
 let currentUser = null;
 
@@ -314,7 +315,7 @@ reportsList.addEventListener("click", async (event) => {
 
   if (event.target.classList.contains("download")) {
     try {
-        const resp = await authenticatedFetch(`${API.REPORTS}/${id}/download`);
+        const resp = await authenticatedFetch(`${API.DOWNLOAD_REPORT}/${id}/download`);
 
         if (!resp.ok) {
             alert("Failed to download report.");
