@@ -314,29 +314,27 @@ reportsList.addEventListener("click", async (event) => {
 
   if (event.target.classList.contains("download")) {
     try {
-      const resp = await authenticatedFetch(`${API.REPORTS}/${id}/download`, {
-        method: "GET",
-      });
+        const resp = await authenticatedFetch(`${API.REPORTS}/${id}/download`);
 
-      if (!resp.ok) {
-        alert("Failed to download report.");
-        return;
-      }
+        if (!resp.ok) {
+            alert("Failed to download report.");
+            return;
+        }
 
-      const blob = await resp.blob();
-      const url = window.URL.createObjectURL(blob);
+        const blob = await resp.blob();
+        const url = window.URL.createObjectURL(blob);
 
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `report_${id}.pdf`;
-      document.body.appendChild(a);
-      a.click();
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `report_${id}.md`;
+        document.body.appendChild(a);
+        a.click();
 
-      window.URL.revokeObjectURL(url);
-      a.remove();
-    } catch (err) {
-      console.error(err);
-      alert("Download error.");
+        window.URL.revokeObjectURL(url);
+        a.remove();
+      } catch (err) {
+        console.error(err);
+        alert("Download error.");
     }
   } else if (event.target.classList.contains("delete")) {
     if (!confirm("Delete this report?")) return;
