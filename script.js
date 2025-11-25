@@ -21,7 +21,7 @@ iconclose.addEventListener('click', () => {
 });
 
 const API_URL = API.USER;
-
+console.log("API_URL:", API_URL);
 
 function storeTokens(accessToken, refreshToken) {
   localStorage.setItem("accessToken", accessToken);
